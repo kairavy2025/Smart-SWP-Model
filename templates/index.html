@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent SWP Model</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="input-panel">
+                <div class="panel-heading">
+                    <span>Scenario Controls</span>
+                    <small>NIFTY 50 model</small>
+                </div>
+
+                <label for="initialCorpus">Initial Corpus</label>
+                <input type="number" id="initialCorpus" value="1000000" min="100000" step="100000">
+
+                <label for="withdrawalRate">Withdrawal Rate (%)</label>
+                <input type="number" id="withdrawalRate" value="4" min="1" max="10" step="0.5">
+
+                <label for="inflationRate">Inflation Rate (%)</label>
+                <input type="number" id="inflationRate" value="6" min="0" max="12" step="0.5">
+
+                <label for="years">Monte Carlo Years</label>
+                <input type="number" id="years" value="30" min="5" max="40" step="5">
+
+                <label for="simulations">Simulations</label>
+                <input type="number" id="simulations" value="10000" min="1000" max="10000" step="1000">
+
+                <button id="calculateButton" onclick="calculateSWP()">Calculate Strategy</button>
+            </div>
+            <p id="statusMessage" class="status-message"></p>
+        </aside>
+
+        <main class="main-content">
+            <header class="hero">
+                <div class="hero-copy">
+                    <span class="eyebrow">Portfolio withdrawal intelligence</span>
+                    <h1>Intelligent SWP Model</h1>
+                    <p>Compare static withdrawals with a market-aware strategy using guard logic, inflation adjustment, Monte Carlo stress testing, and validation across historical periods.</p>
+                </div>
+                <div class="hero-signal" aria-label="Strategy overview">
+                    <span>Market Guard</span>
+                    <strong>Risk Aware</strong>
+                    <div class="signal-bars">
+                        <i></i>
+                        <i></i>
+                        <i></i>
+                        <i></i>
+                    </div>
+                </div>
+            </header>
+
+            <section class="metrics">
+                <div class="metric-card static-card">
+                    <span>Static Final Corpus</span>
+                    <strong id="staticCorpus">-</strong>
+                </div>
+
+                <div class="metric-card smart-card">
+                    <span>Smart Final Corpus</span>
+                    <strong id="smartCorpus">-</strong>
+                </div>
+
+                <div class="metric-card probability-card">
+                    <span>Survival Probability</span>
+                    <strong id="survivalProbability">-</strong>
+                </div>
+            </section>
+
+            <section class="chart-card">
+                <div id="corpusChart"></div>
+            </section>
+
+            <section class="chart-card">
+                <div id="withdrawalChart"></div>
+            </section>
+
+            <section class="summary-grid">
+                <div class="summary-card">
+                    <h3>Monte Carlo Summary</h3>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>Average Final Corpus</td>
+                                <td id="avgCorpus">-</td>
+                            </tr>
+                            <tr>
+                                <td>Median Final Corpus</td>
+                                <td id="medianCorpus">-</td>
+                            </tr>
+                            <tr>
+                                <td>Minimum Final Corpus</td>
+                                <td id="minCorpus">-</td>
+                            </tr>
+                            <tr>
+                                <td>Maximum Final Corpus</td>
+                                <td id="maxCorpus">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="summary-card">
+                    <div id="monteCarloChart"></div>
+                </div>
+            </section>
+
+            <section class="summary-card validation-card">
+                <h3>K-Fold Validation</h3>
+                <div class="validation-metrics">
+                    <div>
+                        <span>Average Smart Improvement</span>
+                        <strong id="avgImprovement">-</strong>
+                    </div>
+                    <div>
+                        <span>Smart Outperformance Rate</span>
+                        <strong id="outperformanceRate">-</strong>
+                    </div>
+                    <div>
+                        <span>Validation Folds</span>
+                        <strong id="validationFolds">-</strong>
+                    </div>
+                </div>
+
+                <table class="validation-table">
+                    <thead>
+                        <tr>
+                            <th>Fold</th>
+                            <th>Period</th>
+                            <th>Static Final</th>
+                            <th>Smart Final</th>
+                            <th>Improvement</th>
+                        </tr>
+                    </thead>
+                    <tbody id="validationRows"></tbody>
+                </table>
+            </section>
+
+            <section class="summary-card future-card">
+                <div class="section-title-row">
+                    <div>
+                        <h3>Future Withdrawal Suggestion</h3>
+                        <p>Suggested next 3-month withdrawal plan from the current date, based on market signal, volatility guard, inflation, and historical return assumptions.</p>
+                    </div>
+                    <span id="futureRiskLevel" class="risk-pill">-</span>
+                </div>
+
+                <div class="future-metrics">
+                    <div>
+                        <span>Current Date</span>
+                        <strong id="futureCurrentDate">-</strong>
+                    </div>
+                    <div>
+                        <span>Recommendation</span>
+                        <strong id="futureRecommendation">-</strong>
+                    </div>
+                    <div>
+                        <span>Next Month Withdrawal</span>
+                        <strong id="nextWithdrawal">-</strong>
+                    </div>
+                    <div>
+                        <span>Current Market Signal</span>
+                        <strong id="futureMarketSignal">-</strong>
+                    </div>
+                    <div>
+                        <span>Guard Applied</span>
+                        <strong id="futureGuardFactor">-</strong>
+                    </div>
+                </div>
+
+                <p id="futureReason" class="future-note">-</p>
+
+                <table class="future-table">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Period</th>
+                            <th>Static Withdrawal</th>
+                            <th>Suggested Withdrawal</th>
+                            <th>Projected Corpus</th>
+                        </tr>
+                    </thead>
+                    <tbody id="futurePlanRows"></tbody>
+                </table>
+            </section>
+
+            <section class="summary-card explanation">
+                <h3>Model Explanation</h3>
+                <p>
+                    This Intelligent SWP Model compares a traditional fixed withdrawal strategy with a smart withdrawal strategy.
+                    The smart strategy uses moving average signals, volatility levels, inflation adjustment, Monte Carlo simulation, and K-fold validation.
+                </p>
+
+                <div class="explanation-grid">
+                    <div>
+                        <h4>Static SWP</h4>
+                        <p>
+                            Withdraws a fixed monthly amount and increases it yearly based on inflation.
+                            It does not react to market crashes or high volatility.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4>Smart SWP</h4>
+                        <p>
+                            Adjusts withdrawals using market guard logic.
+                            When the market is bearish or volatility is high, withdrawals are reduced to protect capital.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4>Monte Carlo Simulation</h4>
+                        <p>
+                            Tests thousands of possible future market paths to estimate the probability that the portfolio survives for the selected years.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4>K-Fold Validation</h4>
+                        <p>
+                            Splits historical data into five periods and checks whether the smart strategy protects more corpus than the static strategy.
+                            It validates the model; the future suggestion section uses the latest signal to recommend withdrawals.
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/js/script.js"></script>
+</body>
+</html>

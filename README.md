@@ -114,7 +114,7 @@ swp
 Download the project folder or clone it from GitHub.
 
 ```bash
-git clone https://github.com/kairavy2025/Intelligent-SWP-Model.git
+git clone https://github.com/kairavy2025/Smart-SWP-Model.git
 ```
 
 ### 2. Open the Project Folder
